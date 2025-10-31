@@ -54,12 +54,21 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Double getProductStock(Long id){
-        return null;
+        return productRepository.findById(id)
+                .map(Product::getCurrentStock)
+                .orElse(0.0);
     }
 
     @Override
     public List<ProductDTO> getLowStockProducts(){
-        return null;
+        List<Product> products = productRepository.findAll();
+        return products.stream().filter(product -> {
+            try{
+                return product.getCurrentStock() < product.getReorderPoint();
+            } catch (NumberFormatException  e){
+                return false; // skip invalid reorderPoint
+            }
+        }).map(productMapper::toDTO).toList();
     }
 
 }
