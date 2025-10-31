@@ -1,9 +1,6 @@
 package com.example.tricol.tricolspringbootrestapi.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,11 +16,19 @@ public class Supplier {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String companyName;
-    private String fullAddress;
-    private String contactPerson;
+
+    private String society;
+    private String address;
+    private String socialReason;
+
+    private String contactAgent;
+
+    @Column(unique = true, nullable = false)
     private String email;
+
+    @Column(nullable = false)
     private String phone;
+
     private String city;
     private String ice;
 }
