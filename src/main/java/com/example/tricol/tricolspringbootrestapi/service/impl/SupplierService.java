@@ -1,5 +1,7 @@
 package com.example.tricol.tricolspringbootrestapi.service.impl;
 
+import com.example.tricol.tricolspringbootrestapi.dto.request.SupplierDTO;
+import com.example.tricol.tricolspringbootrestapi.mapper.SupplierMapper;
 import com.example.tricol.tricolspringbootrestapi.model.Supplier;
 import com.example.tricol.tricolspringbootrestapi.repository.SupplierRepository;
 import com.example.tricol.tricolspringbootrestapi.service.SupplierServiceInterface;
@@ -7,42 +9,51 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class SupplierService implements SupplierServiceInterface {
-    SupplierRepository supplierRepository;
     @Autowired
-    public SupplierService(SupplierRepository supplierRepository) {
-        this.supplierRepository = supplierRepository;
+    private SupplierRepository supplierRepository;
+    @Autowired
+    private SupplierMapper supplierMapper;
+
+    public Supplier createSupplier(SupplierDTO supplierDTO) {
+        return supplierRepository.save(supplierMapper.toEntity(supplierDTO));
     }
 
-    @Override
-    public List<Supplier> getSuppliers() {
-        return supplierRepository.findAll();
+    public SupplierDTO getSupplierById(Long id) {
+        return supplierRepository.findById(id)
+                .map(supplier -> supplierMapper.toDTO(supplier))
+                .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + id));
     }
 
-    @Override
-    public Supplier createSupplier(Supplier supplier) {
-        return supplierRepository.save(supplier);
+    public List<SupplierDTO> getSuppliers() {
+        return supplierMapper.toDTOList(supplierRepository.findAll());
     }
 
-    @Override
-    public Optional<Supplier> getSupplierById(Long id) {
-        return supplierRepository.findById(id);
+    // update a supplier
+    public SupplierDTO updateSupplier(Long id, SupplierDTO supplierDTO) {
+        Supplier existingSupplier = supplierRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + id));
+
+        supplierMapper.updateSupplierFromDTO(supplierDTO, existingSupplier);
+        return supplierMapper.toDTO(supplierRepository.save(existingSupplier));
     }
 
-    @Override
-    public Supplier updateSupplier(Supplier supplier) {
-        return supplierRepository.save(supplier);
+    // delete a supplier
+    public void deleteSupplier(Long id) {
+        Supplier existingSupplier = supplierRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + id));
+        supplierRepository.delete(existingSupplier);
     }
 
-    @Override
-    public boolean deleteSupplierById(Long id) {
-        if (supplierRepository.existsById(id)){
-            supplierRepository.deleteById(id);
-            return true;
-        }
-        return false;
+    // search suppliers by society or contact agent
+    public List<SupplierDTO> searchSuppliers(String query) {
+        return supplierRepository
+                .findBySocietyContainingIgnoreCaseOrContactAgentContainingIgnoreCase(query, query)
+                .stream()
+                .map(supplierMapper::toDTO)
+                .collect(Collectors.toList());
     }
 }
