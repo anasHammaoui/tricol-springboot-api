@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -29,7 +31,7 @@ public class Product {
     private String description;
 
     @Column(nullable = false)
-    private double unitPrice;
+    private Double unitPrice;
 
     @Column(nullable = false)
     private String category;
@@ -38,10 +40,10 @@ public class Product {
     private String measureUnit;
 
     @Column(nullable = false)
-    private double reorderPoint;
+    private Double reorderPoint;
 
     @Column(nullable = false)
-    private double currentStock;
+    private Double currentStock;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -50,4 +52,7 @@ public class Product {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
+
+    @OneToMany(mappedBy = "product")
+    private List<OrderItem> commandItems = new ArrayList<>();
 }
