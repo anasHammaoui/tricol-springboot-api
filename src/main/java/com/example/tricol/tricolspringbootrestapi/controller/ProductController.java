@@ -3,6 +3,7 @@ package com.example.tricol.tricolspringbootrestapi.controller;
 import com.example.tricol.tricolspringbootrestapi.dto.request.ProductDTO;
 import com.example.tricol.tricolspringbootrestapi.model.Product;
 import com.example.tricol.tricolspringbootrestapi.service.ProductService;
+import com.example.tricol.tricolspringbootrestapi.service.impl.ProductServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,4 +66,25 @@ public class ProductController {
             return ResponseEntity.status(404).body("Product not found or could not be deleted");
         }
     }
+
+    @GetMapping("/stock/{id}")
+    public ResponseEntity<Object> getProductStock(@PathVariable Long id){
+        try {
+            Double stock = productService.getProductStock(id);
+            return ResponseEntity.status(HttpStatus.OK).body(stock);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body("Product not found");
+        }
+    }
+
+    @GetMapping("/lowstock")
+    public  ResponseEntity<Object> getLowStockProducts(){
+        try {
+            List<ProductDTO> lowStockProducts = productService.getLowStockProducts();
+            return ResponseEntity.status(HttpStatus.OK).body(lowStockProducts);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body("No low stock products found");
+        }
+    }
+
 }
