@@ -53,7 +53,7 @@ public class OrderController {
             OrderResponse updatedOrder = orderService.updateOrder(id, orderDto);
             return ResponseEntity.status(HttpStatus.OK).body(updatedOrder);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body("Product not found or could not be updated");
+            return ResponseEntity.status(404).body("Order not found or could not be updated");
         }
     }
 }

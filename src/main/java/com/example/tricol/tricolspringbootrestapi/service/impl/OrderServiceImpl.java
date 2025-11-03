@@ -77,7 +77,6 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse updateOrder(Long id, UpdateOrderStatus request) {
         Order existingOrder = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + id));
-
         orderMapper.updateOrderFromDTO(request, existingOrder);
         return orderMapper.toDto(orderRepository.save(existingOrder));
     }
