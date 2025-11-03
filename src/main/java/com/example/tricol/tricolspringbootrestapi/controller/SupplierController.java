@@ -2,6 +2,7 @@ package com.example.tricol.tricolspringbootrestapi.controller;
 
 import com.example.tricol.tricolspringbootrestapi.dto.request.SupplierDTO;
 import com.example.tricol.tricolspringbootrestapi.model.Supplier;
+import com.example.tricol.tricolspringbootrestapi.service.SupplierServiceInterface;
 import com.example.tricol.tricolspringbootrestapi.service.impl.SupplierService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,7 +16,7 @@ import java.util.List;
 @RequestMapping("/suppliers")
 public class SupplierController {
     @Autowired
-    private SupplierService supplierService;
+    private SupplierServiceInterface supplierService;
 
     @PostMapping("/create")
     public ResponseEntity<Supplier> createSupplier(@RequestBody SupplierDTO supplierDTO) {
