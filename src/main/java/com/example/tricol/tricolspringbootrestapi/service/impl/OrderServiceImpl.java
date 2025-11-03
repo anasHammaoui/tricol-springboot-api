@@ -60,4 +60,14 @@ public class OrderServiceImpl implements OrderService {
 
         return orderMapper.toDto(saved);
     }
+
+    public OrderResponse getOrderById(Long id){
+        return orderRepository.findById(id)
+                .map(order -> orderMapper.toDto(order))
+                .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
+    }
+
+    public List<OrderResponse> getAllOrders(){
+        return orderMapper.toDTOList(orderRepository.findAll());
+    }
 }
