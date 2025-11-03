@@ -1,6 +1,8 @@
 package com.example.tricol.tricolspringbootrestapi.controller;
 
 import com.example.tricol.tricolspringbootrestapi.dto.request.CreateOrderRequest;
+import com.example.tricol.tricolspringbootrestapi.dto.request.ProductDTO;
+import com.example.tricol.tricolspringbootrestapi.dto.request.UpdateOrderStatus;
 import com.example.tricol.tricolspringbootrestapi.dto.response.OrderResponse;
 import com.example.tricol.tricolspringbootrestapi.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +45,15 @@ public class OrderController {
             return ResponseEntity.ok(order);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<Object> updateOrder(@PathVariable Long id, @RequestBody UpdateOrderStatus orderDto) {
+        try {
+            OrderResponse updatedOrder = orderService.updateOrder(id, orderDto);
+            return ResponseEntity.status(HttpStatus.OK).body(updatedOrder);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body("Product not found or could not be updated");
         }
     }
 }

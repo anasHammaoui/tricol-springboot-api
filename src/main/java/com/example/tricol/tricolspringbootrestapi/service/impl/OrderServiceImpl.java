@@ -2,6 +2,8 @@ package com.example.tricol.tricolspringbootrestapi.service.impl;
 
 import com.example.tricol.tricolspringbootrestapi.dto.request.CreateOrderItemRequest;
 import com.example.tricol.tricolspringbootrestapi.dto.request.CreateOrderRequest;
+import com.example.tricol.tricolspringbootrestapi.dto.request.SupplierDTO;
+import com.example.tricol.tricolspringbootrestapi.dto.request.UpdateOrderStatus;
 import com.example.tricol.tricolspringbootrestapi.dto.response.OrderResponse;
 import com.example.tricol.tricolspringbootrestapi.mapper.OrderMapper;
 import com.example.tricol.tricolspringbootrestapi.model.Order;
@@ -69,5 +71,14 @@ public class OrderServiceImpl implements OrderService {
 
     public List<OrderResponse> getAllOrders(){
         return orderMapper.toDTOList(orderRepository.findAll());
+    }
+
+    //update order
+    public OrderResponse updateOrder(Long id, UpdateOrderStatus request) {
+        Order existingOrder = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + id));
+
+        orderMapper.updateOrderFromDTO(request, existingOrder);
+        return orderMapper.toDto(orderRepository.save(existingOrder));
     }
 }
