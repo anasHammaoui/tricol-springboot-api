@@ -33,7 +33,7 @@ public class Order {
     protected void onCreate() {
         orderDate = LocalDateTime.now();
     }
-    private OrderStatus status;
+    private OrderStatus  status;
     private Double totalAmount;
 
 

@@ -17,6 +17,8 @@ import com.example.tricol.tricolspringbootrestapi.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,5 +81,17 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + id));
         orderMapper.updateOrderFromDTO(request, existingOrder);
         return orderMapper.toDto(orderRepository.save(existingOrder));
+    }
+    // filter order
+    public List<OrderResponse> filterOrdersByStatus(Order.OrderStatus status) {
+        return orderMapper.toDTOList(orderRepository.findByStatus(status));
+    }
+    public List<OrderResponse> filterOrdersBySupplier(Long supplierId) {
+        Supplier supplier = supplierRepository.findById(supplierId)
+                .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + supplierId));
+        return orderMapper.toDTOList(orderRepository.findBySupplier(supplier));
+    }
+    public List<OrderResponse> filterOrdersByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+        return orderMapper.toDTOList(orderRepository.findByOrderDateBetween(startDate, endDate));
     }
 }
