@@ -2,7 +2,10 @@ package com.example.tricol.tricolspringbootrestapi.service.impl;
 
 import com.example.tricol.tricolspringbootrestapi.dto.request.CreateOrderItemRequest;
 import com.example.tricol.tricolspringbootrestapi.dto.request.CreateOrderRequest;
+import com.example.tricol.tricolspringbootrestapi.dto.response.OrderItemResponse;
 import com.example.tricol.tricolspringbootrestapi.dto.response.OrderResponse;
+import com.example.tricol.tricolspringbootrestapi.dto.response.ReceiveOrderResponse;
+import com.example.tricol.tricolspringbootrestapi.mapper.OrderItemMapper;
 import com.example.tricol.tricolspringbootrestapi.mapper.OrderMapper;
 import com.example.tricol.tricolspringbootrestapi.model.Order;
 import com.example.tricol.tricolspringbootrestapi.model.OrderItem;
@@ -25,6 +28,7 @@ public class OrderServiceImpl implements OrderService {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
+    private final OrderItemMapper orderItemMapper;
 
     @Override
     public OrderResponse createOrder(CreateOrderRequest request) {
@@ -68,6 +72,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     public List<OrderResponse> getAllOrders(){
-        return orderMapper.toDTOList(orderRepository.findAll());
+        return orderRepository.findAll().stream()
+                .map(orderMapper::toDto)
+                .toList();
     }
+
+
 }
