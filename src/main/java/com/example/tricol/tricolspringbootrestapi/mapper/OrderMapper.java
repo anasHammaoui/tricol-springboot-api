@@ -2,6 +2,7 @@ package com.example.tricol.tricolspringbootrestapi.mapper;
 
 import com.example.tricol.tricolspringbootrestapi.dto.request.ProductDTO;
 import com.example.tricol.tricolspringbootrestapi.dto.response.OrderResponse;
+import com.example.tricol.tricolspringbootrestapi.dto.response.ReceiveOrderResponse;
 import com.example.tricol.tricolspringbootrestapi.model.Order;
 import com.example.tricol.tricolspringbootrestapi.model.Product;
 import org.mapstruct.Mapper;
@@ -16,4 +17,6 @@ public interface OrderMapper {
 
     List<OrderResponse> toDTOList(List<Order> orders);
 
+    @Mapping(source = "supplier.id", target = "supplierId")
+    ReceiveOrderResponse toReceiveOrderResponse(Order order);
 }
