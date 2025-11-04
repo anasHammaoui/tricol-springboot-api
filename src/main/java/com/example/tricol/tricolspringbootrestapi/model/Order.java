@@ -36,6 +36,9 @@ public class Order {
     private OrderStatus status;
     private Double totalAmount;
 
+    @OneToMany(mappedBy = "order")
+    private List<StockSlot> stockSlot;
+
 
     public enum OrderStatus {
         validated,
