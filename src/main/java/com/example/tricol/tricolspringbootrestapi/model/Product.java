@@ -55,4 +55,10 @@ public class Product {
 
     @OneToMany(mappedBy = "product")
     private List<OrderItem> commandItems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product")
+    private List<StockSlot> stockSlot;
+
+    @OneToMany(mappedBy = "product")
+    private List<StockMovement> stockMovements;
 }

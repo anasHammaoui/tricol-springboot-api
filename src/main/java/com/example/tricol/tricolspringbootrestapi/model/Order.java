@@ -33,8 +33,17 @@ public class Order {
     protected void onCreate() {
         orderDate = LocalDateTime.now();
     }
+
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
+
     private Double totalAmount;
+
+    @OneToMany(mappedBy = "order")
+    private List<StockSlot> stockSlot;
+
+    @OneToMany(mappedBy = "order")
+    private List<StockMovement> stockMovements;
 
 
     public enum OrderStatus {
