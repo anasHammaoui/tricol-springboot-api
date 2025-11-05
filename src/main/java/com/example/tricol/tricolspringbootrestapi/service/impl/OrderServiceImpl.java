@@ -4,18 +4,17 @@ import com.example.tricol.tricolspringbootrestapi.dto.request.CreateOrderItemReq
 import com.example.tricol.tricolspringbootrestapi.dto.request.CreateOrderRequest;
 import com.example.tricol.tricolspringbootrestapi.dto.request.SupplierDTO;
 import com.example.tricol.tricolspringbootrestapi.dto.request.UpdateOrderStatus;
+import com.example.tricol.tricolspringbootrestapi.dto.response.OrderItemResponse;
 import com.example.tricol.tricolspringbootrestapi.dto.response.OrderResponse;
+import com.example.tricol.tricolspringbootrestapi.dto.response.ReceiveOrderResponse;
+import com.example.tricol.tricolspringbootrestapi.mapper.OrderItemMapper;
 import com.example.tricol.tricolspringbootrestapi.mapper.OrderMapper;
-import com.example.tricol.tricolspringbootrestapi.model.Order;
-import com.example.tricol.tricolspringbootrestapi.model.OrderItem;
-import com.example.tricol.tricolspringbootrestapi.model.Product;
-import com.example.tricol.tricolspringbootrestapi.model.Supplier;
-import com.example.tricol.tricolspringbootrestapi.repository.OrderRepository;
-import com.example.tricol.tricolspringbootrestapi.repository.ProductRepository;
-import com.example.tricol.tricolspringbootrestapi.repository.SupplierRepository;
+import com.example.tricol.tricolspringbootrestapi.model.*;
+import com.example.tricol.tricolspringbootrestapi.repository.*;
 import com.example.tricol.tricolspringbootrestapi.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,7 +27,10 @@ public class OrderServiceImpl implements OrderService {
     private final SupplierRepository supplierRepository;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
+    private final StockSlotRepository stockSlotRepository;
+    private final StockMovementRepository stockMovementRepository;
     private final OrderMapper orderMapper;
+    private final OrderItemMapper orderItemMapper;
 
     @Override
     public OrderResponse createOrder(CreateOrderRequest request) {
@@ -94,4 +96,63 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderResponse> filterOrdersByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
         return orderMapper.toDTOList(orderRepository.findByOrderDateBetween(startDate, endDate));
     }
+
+    // receive an order
+    @Transactional
+    public ReceiveOrderResponse receiveOrder(Long orderId){
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
+
+        if (order.getStatus() == Order.OrderStatus.delivered) {
+            throw new RuntimeException("Order has already been received");
+        }
+        order.setStatus(Order.OrderStatus.delivered);
+
+        // create one stockslot per orderitem (per product)
+        List<StockSlot> stockSlots = new ArrayList<>();
+
+        for (OrderItem orderItem : order.getItems()) {
+            StockSlot stockSlot = new StockSlot();
+            stockSlot.setOrder(order);
+            stockSlot.setProduct(orderItem.getProduct());
+            stockSlot.setQuantity(orderItem.getQuantity());
+            stockSlot.setUnitPrice(orderItem.getUnitPrice());
+
+            stockSlots.add(stockSlot);
+
+            // update product current stock
+            Product product = orderItem.getProduct();
+            Double currentStock = product.getCurrentStock();
+            Double newStock = currentStock + orderItem.getQuantity();
+            product.setCurrentStock(newStock);
+
+            productRepository.save(product);
+        }
+
+        // save all stock slots
+        stockSlotRepository.saveAll(stockSlots);
+        order.setStockSlot(stockSlots);
+
+        // save stock movements for each stock slot
+        for (StockSlot stockSlot : stockSlots) {
+            saveStockMovementIn(stockSlot);
+        }
+
+        // save updated order
+        Order savedOrder = orderRepository.save(order);
+
+        return orderMapper.toReceiveOrderResponse(savedOrder);
+    }
+
+    private void saveStockMovementIn(StockSlot stockSlot){
+        StockMovement stockMovement = new StockMovement();
+        stockMovement.setType(StockMovement.Type.in);
+        stockMovement.setQuantity(stockSlot.getQuantity());
+        stockMovement.setProduct(stockSlot.getProduct());
+        stockMovement.setStockSlot(stockSlot);
+        stockMovement.setOrder(stockSlot.getOrder());
+
+        stockMovementRepository.save(stockMovement);
+    }
+
 }

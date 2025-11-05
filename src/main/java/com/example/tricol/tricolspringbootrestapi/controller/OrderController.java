@@ -5,6 +5,7 @@ import com.example.tricol.tricolspringbootrestapi.dto.request.ProductDTO;
 import com.example.tricol.tricolspringbootrestapi.dto.request.UpdateOrderStatus;
 import com.example.tricol.tricolspringbootrestapi.dto.response.OrderResponse;
 import com.example.tricol.tricolspringbootrestapi.model.Order;
+import com.example.tricol.tricolspringbootrestapi.dto.response.ReceiveOrderResponse;
 import com.example.tricol.tricolspringbootrestapi.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -39,7 +40,7 @@ public class OrderController {
             }
             return ResponseEntity.ok(orders);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving orders: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No Orders found");
         }
     }
 
@@ -49,7 +50,17 @@ public class OrderController {
             OrderResponse order = orderService.getOrderById(id);
             return ResponseEntity.ok(order);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Order not found with id: " + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Order " + id + " not found");
+        }
+    }
+
+    @PostMapping("/{id}/receive")
+    public ResponseEntity<Object> receiveOrder(@PathVariable Long id){
+        try {
+            ReceiveOrderResponse response = orderService.receiveOrder(id);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order " + id + " could not found or an error occurred");
         }
     }
 
