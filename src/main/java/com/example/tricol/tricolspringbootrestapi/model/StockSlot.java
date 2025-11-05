@@ -28,4 +28,11 @@ public class StockSlot {
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
+
+    @OneToMany(mappedBy = "stockSlot")
+    private List<StockMovement> stockMovements;
 }

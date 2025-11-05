@@ -24,6 +24,7 @@ public class OrderServiceImpl implements OrderService {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final StockSlotRepository stockSlotRepository;
+    private final StockMovementRepository stockMovementRepository;
     private final OrderMapper orderMapper;
     private final OrderItemMapper orderItemMapper;
 
@@ -88,6 +89,7 @@ public class OrderServiceImpl implements OrderService {
         for (OrderItem orderItem : order.getItems()) {
             StockSlot stockSlot = new StockSlot();
             stockSlot.setOrder(order);
+            stockSlot.setProduct(orderItem.getProduct());
             stockSlot.setQuantity(orderItem.getQuantity());
             stockSlot.setUnitPrice(orderItem.getUnitPrice());
 
@@ -106,10 +108,26 @@ public class OrderServiceImpl implements OrderService {
         stockSlotRepository.saveAll(stockSlots);
         order.setStockSlot(stockSlots);
 
+        // save stock movements for each stock slot
+        for (StockSlot stockSlot : stockSlots) {
+            saveStockMovementIn(stockSlot);
+        }
+
         // save updated order
         Order savedOrder = orderRepository.save(order);
 
         return orderMapper.toReceiveOrderResponse(savedOrder);
+    }
+
+    private void saveStockMovementIn(StockSlot stockSlot){
+        StockMovement stockMovement = new StockMovement();
+        stockMovement.setType(StockMovement.Type.in);
+        stockMovement.setQuantity(stockSlot.getQuantity());
+        stockMovement.setProduct(stockSlot.getProduct());
+        stockMovement.setStockSlot(stockSlot);
+        stockMovement.setOrder(stockSlot.getOrder());
+
+        stockMovementRepository.save(stockMovement);
     }
 
 }
