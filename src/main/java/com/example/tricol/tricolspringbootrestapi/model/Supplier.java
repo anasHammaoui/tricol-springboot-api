@@ -36,5 +36,5 @@ public class Supplier {
     private String ice;
 
     @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL)
-    private List<Order> commands = new ArrayList<>();
+    private List<Order> orders = new ArrayList<>();
 }
