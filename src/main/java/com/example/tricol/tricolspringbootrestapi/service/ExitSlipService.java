@@ -8,6 +8,7 @@ import com.example.tricol.tricolspringbootrestapi.enums.ExitSlipStatus;
 
 public interface ExitSlipService {
 ExitSlipResponse createExitSlip(CreateExitSlipRequest request);
+ExitSlipResponse validateExitSlip(Long id);
 ExitSlipResponse cancelExitSlip(Long id);
 ExitSlipResponse getExitSlip(Long id);
 List<ExitSlipResponse> getAllExitSlips();
