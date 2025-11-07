@@ -28,6 +28,12 @@ public class ExitSlipController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     
+    @PostMapping("/{id}/validate")
+    public ResponseEntity<ExitSlipResponse> validateExitSlip(@PathVariable Long id) {
+        ExitSlipResponse response = exitSlipService.validateExitSlip(id);
+        return ResponseEntity.ok(response);
+    }
+    
     @PostMapping("/{id}/cancel")
     public ResponseEntity<ExitSlipResponse> cancelExitSlip(@PathVariable Long id) {
         ExitSlipResponse response = exitSlipService.cancelExitSlip(id);

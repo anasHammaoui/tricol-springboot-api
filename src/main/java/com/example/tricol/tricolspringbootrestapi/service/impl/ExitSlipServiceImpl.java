@@ -26,6 +26,8 @@ public class ExitSlipServiceImpl implements ExitSlipService {
     
     private final ExitSlipRepository exitSlipRepository;
     private final ProductRepository productRepository;
+    private final StockSlotRepository stockSlotRepository;
+    private final StockMovementRepository stockMovementRepository;
     private final ExitSlipMapper exitSlipMapper;
     
     @Transactional
@@ -56,6 +58,86 @@ public class ExitSlipServiceImpl implements ExitSlipService {
         ExitSlip saved = exitSlipRepository.save(exitSlip);
         return exitSlipMapper.toResponse(saved);
     }
+
+    @Transactional
+    public ExitSlipResponse validateExitSlip(Long id) {
+        ExitSlip exitSlip = exitSlipRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Exit slip not found: " + id));
+        
+        if (exitSlip.getStatus() != ExitSlipStatus.DRAFT) {
+            throw new RuntimeException("Only DRAFT exit slips can be validated");
+        }
+        
+        // Consume stock in FIFO for each item
+        for (ExitSlipItem item : exitSlip.getItems()) {
+            Product product = item.getProduct();
+            double quantityNeeded = item.getRequestedQuantity().doubleValue();
+            
+            List<StockSlot> availableSlots = stockSlotRepository
+                .findByProductAndAvailableQuantityGreaterThanOrderByEntryDateAsc(product, 0.0);
+            
+            if (availableSlots.isEmpty()) {
+                throw new RuntimeException("Insufficient stock for product: " + product.getName());
+            }
+            
+            double totalAvailable = availableSlots.stream()
+                .mapToDouble(slot -> slot.getAvailableQuantity() != null ? slot.getAvailableQuantity() : 0.0)
+                .sum();
+            
+            if (totalAvailable < quantityNeeded) {
+                throw new RuntimeException(
+                    String.format("Insufficient stock for product: %s. Required: %.2f, Available: %.2f",
+                        product.getName(), quantityNeeded, totalAvailable)
+                );
+            }
+            
+            double remainingQuantity = quantityNeeded;
+            
+            // Consume from oldest slots first (FIFO)
+            for (StockSlot slot : availableSlots) {
+                if (remainingQuantity <= 0) {
+                    break;
+                }
+                
+                double availableInSlot = slot.getAvailableQuantity() != null ? slot.getAvailableQuantity() : 0.0;
+                double toConsume = Math.min(remainingQuantity, availableInSlot);
+                
+                // Create stock movement OUT
+                saveStockMovementOut(slot, product, toConsume);
+                
+                // Update slot available quantity
+                slot.setAvailableQuantity(availableInSlot - toConsume);
+                stockSlotRepository.save(slot);
+                
+                remainingQuantity -= toConsume;
+            }
+            
+            item.setActualQuantity(item.getRequestedQuantity());
+            
+            // Update product current stock
+            double newStock = product.getCurrentStock() - quantityNeeded;
+            product.setCurrentStock(newStock);
+            productRepository.save(product);
+        }
+        
+        exitSlip.setStatus(ExitSlipStatus.VALIDATED);
+        exitSlip.setValidatedAt(LocalDateTime.now());
+        exitSlip.setValidatedBy("SYSTEM");
+        
+        ExitSlip validated = exitSlipRepository.save(exitSlip);
+        return exitSlipMapper.toResponse(validated);
+    }
+    
+    private void saveStockMovementOut(StockSlot stockSlot, Product product, double quantity) {
+        StockMovement stockMovement = new StockMovement();
+        stockMovement.setType(StockMovement.Type.out);
+        stockMovement.setQuantity(-quantity);
+        stockMovement.setProduct(product);
+        stockMovement.setStockSlot(stockSlot);
+        
+        stockMovementRepository.save(stockMovement);
+    }
+    
     @Transactional
     public ExitSlipResponse cancelExitSlip(Long id) {
         ExitSlip exitSlip = exitSlipRepository.findById(id)
