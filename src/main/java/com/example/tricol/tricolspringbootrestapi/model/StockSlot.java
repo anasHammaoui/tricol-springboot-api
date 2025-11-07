@@ -23,6 +23,7 @@ public class StockSlot {
     protected void onCreate(){entryDate = LocalDateTime.now();}
 
     private Double quantity;
+    private Double availableQuantity;
     private Double unitPrice;
 
     @ManyToOne

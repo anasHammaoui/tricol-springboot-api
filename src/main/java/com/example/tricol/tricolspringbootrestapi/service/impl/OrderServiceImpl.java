@@ -116,6 +116,7 @@ public class OrderServiceImpl implements OrderService {
             stockSlot.setOrder(order);
             stockSlot.setProduct(orderItem.getProduct());
             stockSlot.setQuantity(orderItem.getQuantity());
+            stockSlot.setAvailableQuantity(orderItem.getQuantity());
             stockSlot.setUnitPrice(orderItem.getUnitPrice());
 
             stockSlots.add(stockSlot);
