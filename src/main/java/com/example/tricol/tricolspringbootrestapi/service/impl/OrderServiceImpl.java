@@ -2,11 +2,11 @@ package com.example.tricol.tricolspringbootrestapi.service.impl;
 
 import com.example.tricol.tricolspringbootrestapi.dto.request.CreateOrderItemRequest;
 import com.example.tricol.tricolspringbootrestapi.dto.request.CreateOrderRequest;
-import com.example.tricol.tricolspringbootrestapi.dto.request.SupplierDTO;
 import com.example.tricol.tricolspringbootrestapi.dto.request.UpdateOrderStatus;
-import com.example.tricol.tricolspringbootrestapi.dto.response.OrderItemResponse;
 import com.example.tricol.tricolspringbootrestapi.dto.response.OrderResponse;
 import com.example.tricol.tricolspringbootrestapi.dto.response.ReceiveOrderResponse;
+import com.example.tricol.tricolspringbootrestapi.exception.InvalidOperationException;
+import com.example.tricol.tricolspringbootrestapi.exception.ResourceNotFoundException;
 import com.example.tricol.tricolspringbootrestapi.mapper.OrderItemMapper;
 import com.example.tricol.tricolspringbootrestapi.mapper.OrderMapper;
 import com.example.tricol.tricolspringbootrestapi.model.*;
@@ -33,7 +33,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse createOrder(CreateOrderRequest request) {
         Supplier supplier = supplierRepository.findById(request.getSupplierId()).
-                orElseThrow(() -> new RuntimeException("Supplier not found with id: " + request.getSupplierId()));
+                orElseThrow(() -> new ResourceNotFoundException("Supplier", request.getSupplierId()));
 
         Order order = new Order();
         order.setSupplier(supplier);
@@ -44,7 +44,7 @@ public class OrderServiceImpl implements OrderService {
 
         for (CreateOrderItemRequest itemReq : request.getItems()) {
             Product product = productRepository.findById(itemReq.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Product", itemReq.getProductId()));
 
             OrderItem item = new OrderItem();
             item.setOrder(order);
@@ -68,7 +68,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse getOrderById(Long id){
         return orderRepository.findById(id)
                 .map(order -> orderMapper.toDto(order))
-                .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Order", id));
     }
 
     public List<OrderResponse> getAllOrders(){
@@ -78,7 +78,7 @@ public class OrderServiceImpl implements OrderService {
     //update order
     public OrderResponse updateOrder(Long id, UpdateOrderStatus request) {
         Order existingOrder = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Order", id));
 
         orderMapper.updateOrderFromDTO(request, existingOrder);
         return orderMapper.toDto(orderRepository.save(existingOrder));
@@ -88,10 +88,10 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public ReceiveOrderResponse receiveOrder(Long orderId){
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
+                .orElseThrow(() -> new ResourceNotFoundException("Order", orderId));
 
         if (order.getStatus() == Order.OrderStatus.delivered) {
-            throw new RuntimeException("Order has already been received");
+            throw new InvalidOperationException("Order has already been received");
         }
         order.setStatus(Order.OrderStatus.delivered);
 
