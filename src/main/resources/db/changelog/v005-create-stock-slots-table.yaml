@@ -2,6 +2,11 @@ databaseChangeLog:
   - changeSet:
       id: v005-create-stock-slots-table
       author: anas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: stock_slots
       changes:
         - createTable:
             tableName: stock_slots

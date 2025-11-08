@@ -2,6 +2,11 @@ databaseChangeLog:
   - changeSet:
       id: v008-create-exit-slip-items-table
       author: anas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: exit_slip_items
       changes:
         - createTable:
             tableName: exit_slip_items
