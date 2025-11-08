@@ -41,9 +41,12 @@ public class ProductController {
     public ResponseEntity<Object> getProducts(){
         try {
             List<ProductDTO> products = productService.getProducts();
-            return  ResponseEntity.status(HttpStatus.OK).body(products);
+            if (products.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No products found");
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(products);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body("Products not found");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving products: " + e.getMessage());
         }
     }
 
@@ -53,7 +56,7 @@ public class ProductController {
             ProductDTO updatedProduct = productService.updateProduct(id, productDTO);
             return ResponseEntity.status(HttpStatus.OK).body(updatedProduct);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body("Product not found or could not be updated");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found with id: " + id);
         }
     }
 
@@ -61,9 +64,9 @@ public class ProductController {
     public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
         try {
             productService.deleteProduct(id);
-            return ResponseEntity.status(HttpStatus.OK).body("deleted successfully");
+            return ResponseEntity.status(HttpStatus.OK).body("Product deleted successfully");
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body("Product not found or could not be deleted");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found with id: " + id);
         }
     }
 
@@ -73,18 +76,20 @@ public class ProductController {
             Double stock = productService.getProductStock(id);
             return ResponseEntity.status(HttpStatus.OK).body(stock);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body("Product not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found with id: " + id);
         }
     }
 
     @GetMapping("/lowstock")
-    public  ResponseEntity<Object> getLowStockProducts(){
+    public ResponseEntity<Object> getLowStockProducts(){
         try {
             List<ProductDTO> lowStockProducts = productService.getLowStockProducts();
+            if (lowStockProducts.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No low stock products found");
+            }
             return ResponseEntity.status(HttpStatus.OK).body(lowStockProducts);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body("No low stock products found");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving low stock products: " + e.getMessage());
         }
     }
-
 }

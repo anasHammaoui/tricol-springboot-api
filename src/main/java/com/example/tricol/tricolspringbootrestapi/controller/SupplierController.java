@@ -32,17 +32,23 @@ public class SupplierController {
     public ResponseEntity<Object> getAllSuppliers() {
         try {
             List<SupplierDTO> suppliers = supplierService.getSuppliers();
+            if (suppliers.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No suppliers found");
+            }
             return ResponseEntity.ok(suppliers);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body("suppliers not found");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving suppliers: " + e.getMessage());
         }
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getSupplierById(@PathVariable Long id) {
-        SupplierDTO supplier = supplierService.getSupplierById(id);
-        return ResponseEntity.ok(supplier);
-
+        try {
+            SupplierDTO supplier = supplierService.getSupplierById(id);
+            return ResponseEntity.ok(supplier);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Supplier not found with id: " + id);
+        }
     }
 
     @PutMapping("/{id}")
@@ -51,7 +57,7 @@ public class SupplierController {
             SupplierDTO updatedSupplier = supplierService.updateSupplier(id, supplierDTO);
             return ResponseEntity.ok(updatedSupplier);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body("Supplier not found or could not be updated");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Supplier not found with id: " + id);
         }
     }
 
@@ -59,9 +65,9 @@ public class SupplierController {
     public ResponseEntity<String> deleteSupplier(@PathVariable Long id) {
         try {
             supplierService.deleteSupplier(id);
-            return ResponseEntity.ok("deleted successfully");
+            return ResponseEntity.ok("Supplier deleted successfully");
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body("Supplier not found or could not be deleted");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Supplier not found with id: " + id);
         }
     }
 
@@ -70,9 +76,12 @@ public class SupplierController {
     public ResponseEntity<Object> searchSuppliers(@RequestParam("q") String query) {
         try {
             List<SupplierDTO> suppliers = supplierService.searchSuppliers(query);
+            if (suppliers.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No suppliers found matching query: " + query);
+            }
             return ResponseEntity.ok(suppliers);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body("Supplier not found or could not be deleted");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error searching suppliers: " + e.getMessage());
         }
     }
 }

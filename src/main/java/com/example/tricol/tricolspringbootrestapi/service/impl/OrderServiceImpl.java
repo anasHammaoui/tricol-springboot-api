@@ -16,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,9 +81,20 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse updateOrder(Long id, UpdateOrderStatus request) {
         Order existingOrder = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + id));
-
         orderMapper.updateOrderFromDTO(request, existingOrder);
         return orderMapper.toDto(orderRepository.save(existingOrder));
+    }
+    // filter order
+    public List<OrderResponse> filterOrdersByStatus(Order.OrderStatus status) {
+        return orderMapper.toDTOList(orderRepository.findByStatus(status));
+    }
+    public List<OrderResponse> filterOrdersBySupplier(Long supplierId) {
+        Supplier supplier = supplierRepository.findById(supplierId)
+                .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + supplierId));
+        return orderMapper.toDTOList(orderRepository.findBySupplier(supplier));
+    }
+    public List<OrderResponse> filterOrdersByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+        return orderMapper.toDTOList(orderRepository.findByOrderDateBetween(startDate, endDate));
     }
 
     // receive an order
@@ -103,6 +116,7 @@ public class OrderServiceImpl implements OrderService {
             stockSlot.setOrder(order);
             stockSlot.setProduct(orderItem.getProduct());
             stockSlot.setQuantity(orderItem.getQuantity());
+            stockSlot.setAvailableQuantity(orderItem.getQuantity());
             stockSlot.setUnitPrice(orderItem.getUnitPrice());
 
             stockSlots.add(stockSlot);
