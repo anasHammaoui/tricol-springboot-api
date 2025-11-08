@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = "com.example.tricol.tricolspringbootrestapi.controller")
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
