@@ -4,15 +4,13 @@ import com.example.tricol.tricolspringbootrestapi.dto.request.CreateOrderRequest
 import com.example.tricol.tricolspringbootrestapi.dto.request.ProductDTO;
 import com.example.tricol.tricolspringbootrestapi.dto.request.UpdateOrderStatus;
 import com.example.tricol.tricolspringbootrestapi.dto.response.OrderResponse;
-import com.example.tricol.tricolspringbootrestapi.model.Order;
 import com.example.tricol.tricolspringbootrestapi.dto.response.ReceiveOrderResponse;
-import com.example.tricol.tricolspringbootrestapi.service.OrderService;
+import com.example  .tricol.tricolspringbootrestapi.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -22,49 +20,33 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/create")
-    public ResponseEntity<OrderResponse> create(@RequestBody CreateOrderRequest request) {
-        try {
+    public ResponseEntity<OrderResponse> create(@Valid @RequestBody CreateOrderRequest request) {
         OrderResponse createdOrder = orderService.createOrder(request);
-            return  ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
     }
 
     @GetMapping
-    public ResponseEntity<Object> getAllOrders(){
-        try {
-            List<OrderResponse> orders = orderService.getAllOrders();
-            if (orders.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No orders found");
-            }
-            return ResponseEntity.ok(orders);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No Orders found");
-        }
+    public ResponseEntity<List<OrderResponse>> getAllOrders(){
+        List<OrderResponse> orders = orderService.getAllOrders();
+        return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getOrderById(@PathVariable Long id){
-        try {
-            OrderResponse order = orderService.getOrderById(id);
-            return ResponseEntity.ok(order);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Order " + id + " not found");
-        }
+    public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long id){
+        OrderResponse order = orderService.getOrderById(id);
+        return ResponseEntity.ok(order);
     }
 
     @PostMapping("/{id}/receive")
-    public ResponseEntity<Object> receiveOrder(@PathVariable Long id){
-        try {
-            ReceiveOrderResponse response = orderService.receiveOrder(id);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order " + id + " could not found or an error occurred");
-        }
+    public ResponseEntity<ReceiveOrderResponse> receiveOrder(@PathVariable Long id){
+        ReceiveOrderResponse response = orderService.receiveOrder(id);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
+    public ResponseEntity<OrderResponse> updateOrder(@PathVariable Long id, @Valid @RequestBody UpdateOrderStatus orderDto) {
+        OrderResponse updatedOrder = orderService.updateOrder(id, orderDto);
+        return ResponseEntity.status(HttpStatus.OK).body(updatedOrder);
     public ResponseEntity<Object> updateOrder(@PathVariable Long id, @RequestBody UpdateOrderStatus orderDto) {
         try {
             OrderResponse updatedOrder = orderService.updateOrder(id, orderDto);

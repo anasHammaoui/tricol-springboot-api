@@ -1,6 +1,7 @@
 package com.example.tricol.tricolspringbootrestapi.service.impl;
 
 import com.example.tricol.tricolspringbootrestapi.dto.request.ProductDTO;
+import com.example.tricol.tricolspringbootrestapi.exception.ResourceNotFoundException;
 import com.example.tricol.tricolspringbootrestapi.mapper.ProductMapper;
 import com.example.tricol.tricolspringbootrestapi.model.Product;
 import com.example.tricol.tricolspringbootrestapi.model.Supplier;
@@ -27,7 +28,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductDTO getProductById(Long id){
         return productRepository.findById(id)
                 .map(product -> productMapper.toDTO(product))
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
     }
 
     @Override
@@ -38,7 +39,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDTO updateProduct(Long id, ProductDTO ProductDTO){
         Product existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
 
         productMapper.updateProductFromDTO(ProductDTO, existingProduct);
         return productMapper.toDTO(productRepository.save(existingProduct));
@@ -47,7 +48,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void deleteProduct(Long id){
         Product existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
 
         productRepository.delete(existingProduct);
     }
