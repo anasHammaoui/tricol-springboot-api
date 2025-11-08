@@ -1,6 +1,7 @@
 package com.example.tricol.tricolspringbootrestapi.service.impl;
 
 import com.example.tricol.tricolspringbootrestapi.dto.request.SupplierDTO;
+import com.example.tricol.tricolspringbootrestapi.exception.DuplicateResourceException;
 import com.example.tricol.tricolspringbootrestapi.exception.ResourceNotFoundException;
 import com.example.tricol.tricolspringbootrestapi.mapper.SupplierMapper;
 import com.example.tricol.tricolspringbootrestapi.model.Supplier;
@@ -20,6 +21,10 @@ public class SupplierService implements SupplierServiceInterface {
     private SupplierMapper supplierMapper;
 
     public Supplier createSupplier(SupplierDTO supplierDTO) {
+        // Check for duplicate email
+        if (supplierRepository.findByEmail(supplierDTO.getEmail()).isPresent()) {
+            throw new DuplicateResourceException("Supplier with email '" + supplierDTO.getEmail() + "' already exists");
+        }
         return supplierRepository.save(supplierMapper.toEntity(supplierDTO));
     }
 

@@ -5,6 +5,7 @@ import com.example.tricol.tricolspringbootrestapi.dto.request.CreateOrderRequest
 import com.example.tricol.tricolspringbootrestapi.dto.request.UpdateOrderStatus;
 import com.example.tricol.tricolspringbootrestapi.dto.response.OrderResponse;
 import com.example.tricol.tricolspringbootrestapi.dto.response.ReceiveOrderResponse;
+import com.example.tricol.tricolspringbootrestapi.exception.BadRequestException;
 import com.example.tricol.tricolspringbootrestapi.exception.InvalidOperationException;
 import com.example.tricol.tricolspringbootrestapi.exception.ResourceNotFoundException;
 import com.example.tricol.tricolspringbootrestapi.mapper.OrderItemMapper;
@@ -32,6 +33,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse createOrder(CreateOrderRequest request) {
+        // Validate order has items
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new BadRequestException("Order must contain at least one item");
+        }
+
         Supplier supplier = supplierRepository.findById(request.getSupplierId()).
                 orElseThrow(() -> new ResourceNotFoundException("Supplier", request.getSupplierId()));
 

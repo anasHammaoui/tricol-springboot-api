@@ -1,10 +1,10 @@
 package com.example.tricol.tricolspringbootrestapi.service.impl;
 
 import com.example.tricol.tricolspringbootrestapi.dto.request.ProductDTO;
+import com.example.tricol.tricolspringbootrestapi.exception.DuplicateResourceException;
 import com.example.tricol.tricolspringbootrestapi.exception.ResourceNotFoundException;
 import com.example.tricol.tricolspringbootrestapi.mapper.ProductMapper;
 import com.example.tricol.tricolspringbootrestapi.model.Product;
-import com.example.tricol.tricolspringbootrestapi.model.Supplier;
 import com.example.tricol.tricolspringbootrestapi.repository.ProductRepository;
 import com.example.tricol.tricolspringbootrestapi.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +21,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product createProduct(ProductDTO ProductDTO){
+        // Check for duplicate reference
+        if (productRepository.findByReference(ProductDTO.getReference()).isPresent()) {
+            throw new DuplicateResourceException("Product with reference '" + ProductDTO.getReference() + "' already exists");
+        }
         return productRepository.save(productMapper.toEntity(ProductDTO));
     }
 
