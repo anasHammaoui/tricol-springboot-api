@@ -31,7 +31,7 @@ public class SupplierService implements SupplierServiceInterface {
     public SupplierDTO getSupplierById(Long id) {
         return supplierRepository.findById(id)
                 .map(supplier -> supplierMapper.toDTO(supplier))
-                .orElseThrow(() -> new ResourceNotFoundException("Supplier", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Supplier with id " + id + " not found"));
     }
 
     public List<SupplierDTO> getSuppliers() {
@@ -41,7 +41,7 @@ public class SupplierService implements SupplierServiceInterface {
     // update a supplier
     public SupplierDTO updateSupplier(Long id, SupplierDTO supplierDTO) {
         Supplier existingSupplier = supplierRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Supplier", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Supplier with id " + id + " not found"));
 
         supplierMapper.updateSupplierFromDTO(supplierDTO, existingSupplier);
         return supplierMapper.toDTO(supplierRepository.save(existingSupplier));
@@ -50,7 +50,7 @@ public class SupplierService implements SupplierServiceInterface {
     // delete a supplier
     public void deleteSupplier(Long id) {
         Supplier existingSupplier = supplierRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Supplier", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Supplier with id " + id + " not found"));
         supplierRepository.delete(existingSupplier);
     }
 

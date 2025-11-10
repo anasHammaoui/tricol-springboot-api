@@ -32,7 +32,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductDTO getProductById(Long id){
         return productRepository.findById(id)
                 .map(product -> productMapper.toDTO(product))
-                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
     }
 
     @Override
@@ -43,7 +43,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDTO updateProduct(Long id, ProductDTO ProductDTO){
         Product existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
 
         productMapper.updateProductFromDTO(ProductDTO, existingProduct);
         return productMapper.toDTO(productRepository.save(existingProduct));
@@ -52,7 +52,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void deleteProduct(Long id){
         Product existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
 
         productRepository.delete(existingProduct);
     }

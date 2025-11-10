@@ -41,7 +41,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         Supplier supplier = supplierRepository.findById(request.getSupplierId()).
-                orElseThrow(() -> new ResourceNotFoundException("Supplier", request.getSupplierId()));
+                orElseThrow(() -> new ResourceNotFoundException("Supplier with id " + request.getSupplierId() + " not found"));
 
         Order order = new Order();
         order.setSupplier(supplier);
@@ -52,7 +52,7 @@ public class OrderServiceImpl implements OrderService {
 
         for (CreateOrderItemRequest itemReq : request.getItems()) {
             Product product = productRepository.findById(itemReq.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product", itemReq.getProductId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Product with id " + itemReq.getProductId() + " not found"));
 
             OrderItem item = new OrderItem();
             item.setOrder(order);
@@ -76,7 +76,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse getOrderById(Long id){
         return orderRepository.findById(id)
                 .map(order -> orderMapper.toDto(order))
-                .orElseThrow(() -> new ResourceNotFoundException("Order", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " not found"));
     }
 
     public List<OrderResponse> getAllOrders(){
@@ -86,7 +86,7 @@ public class OrderServiceImpl implements OrderService {
     //update order
     public OrderResponse updateOrder(Long id, UpdateOrderStatus request) {
         Order existingOrder = orderRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " not found"));
 
         orderMapper.updateOrderFromDTO(request, existingOrder);
         return orderMapper.toDto(orderRepository.save(existingOrder));
@@ -108,7 +108,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public ReceiveOrderResponse receiveOrder(Long orderId){
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order", orderId));
+                .orElseThrow(() -> new ResourceNotFoundException("Order with id " + orderId + " not found"));
 
         if (order.getStatus() == Order.OrderStatus.delivered) {
             throw new InvalidOperationException("Order has already been received");
