@@ -2,12 +2,12 @@ package com.example.tricol.tricolspringbootrestapi.dto.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -24,7 +24,8 @@ public class ProductDTO {
     @Size(max = 1000, message = "Description cannot exceed 1000 characters")
     private String description;
 
-    @Min(value = 0, message = "Unit price must be greater than 0")
+    @NotNull(message = "Unit price is required")
+    @Min(value = 0, message = "Unit price must be greater than or equal to 0")
     private Double unitPrice;
 
     @NotBlank(message = "Category is required")
@@ -33,7 +34,8 @@ public class ProductDTO {
     @NotBlank(message = "Measurement unit is required")
     private String measureUnit;
 
-    @NotBlank(message = "The re-order point is required")
+    @NotNull(message = "The re-order point is required")
+    @Min(value = 0, message = "Re-order point must be greater than or equal to 0")
     private Double reorderPoint;
 
     @Min(value = 0, message = "Stock cannot be below 0")
